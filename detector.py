@@ -21,7 +21,7 @@ parser.add_argument("--mode", dest="mode",
 args = parser.parse_args()
 
 # ground truth
-true_ns = [0, 1, 3, 3,
+true_Ks = [0, 1, 3, 3,
            2, 2, 2, 3,
            4, 2, 4, 3,
            4, 3, 2, 2,
@@ -51,17 +51,18 @@ none_depth = read(0, 'depth')
 
 correct = 0
 for image_id in range(1, 18):
-    print('Doing {}/{}'.format(image_id, len(true_ns) - 1), end='\r')
+    print('Doing {}/{}'.format(image_id, len(true_Ks) - 1), end='\r')
 
     color_image = read(image_id, 'color')
     depth_image = read(image_id, 'depth')
 
     # remove environment
-    depth_image = depth_image - none_depth
+    depth_image = none_depth - depth_image
 
-    # reverse pixel value: make nearest points the highest in value
-    depth_image = np.abs(depth_image - np.max(depth_image))
-    depth_image = depth_image / np.max(depth_image)
+    # rescale image pixels in [0, 1]
+    minimum = np.min(depth_image)
+    maximum = np.max(depth_image)
+    depth_image = (depth_image - minimum) / (maximum - minimum)
 
     # remove border noise: detect high derivative points of different
     # sign and close to each other with second order derivative
@@ -90,26 +91,26 @@ for image_id in range(1, 18):
 
     # save clustering and score for various number of clusters
     # in order to assess the best one
-    ns = list(range(1, 6))
+    Ks = list(range(1, 6))
     scores = []
     clusters_candidates = []
 
     # test various number of clusters
-    for n in ns:
-        cl = KMeans(n_clusters=n, n_jobs=-2)
+    for K in Ks:
+        cl = KMeans(n_clusters=K, n_jobs=-2)
         clusters = cl.fit_predict(points)
 
         clusters_candidates.append(clusters)
 
         # use mean square distance from its centroid for each point
         # in the dataset, penalizing fragmented clusterings
-        score = np.log(cl.inertia_) + n * 0.4
+        score = np.log(cl.inertia_) + K * 0.4
         scores.append(score)
 
     # find clustering with best score
     best_index = np.argmin(scores)
 
-    best_n = ns[best_index]
+    best_K = Ks[best_index]
     best_clustering = clusters_candidates[best_index]
     points[:, 2] = best_clustering
 
@@ -123,11 +124,11 @@ for image_id in range(1, 18):
                                 0.5 * cluster_colors[cluster_id]
 
     # report errors
-    error = best_n != true_ns[image_id]
+    error = best_K != true_Ks[image_id]
     if error:
         print('In {}, found {} people, {} expected'.format(image_id,
-                                                           best_n,
-                                                           true_ns[image_id]))
+                                                           best_K,
+                                                           true_Ks[image_id]))
 
         # for n, score in zip(range(1, 5), scores):
             # print('n={} => score={}'.format(n, score))
@@ -137,7 +138,7 @@ for image_id in range(1, 18):
     if args.mode == 'show_all':
         imshow(color_image)
 
-    elif args.mode == 'show_err' and error:
+    elif args.mode == 'show_errors' and error:
         imshow(color_image)
 
     elif args.mode == 'save':
@@ -145,4 +146,4 @@ for image_id in range(1, 18):
 
     show()
 
-print('{}/{} are correct'.format(correct, len(true_ns) - 1))
+print('{}/{} are correct'.format(correct, len(true_Ks) - 1))
