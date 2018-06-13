@@ -85,7 +85,7 @@ for image_id in range(1, 18):
 
     # create (row, col, color) data
     rows, cols = np.mgrid[0:depth_image.shape[0],
-                              0:depth_image.shape[1]]
+                          0:depth_image.shape[1]]
     rows = rows.ravel(order='F')
     cols = cols.ravel(order='F')
     values = depth_image.ravel(order='F')
