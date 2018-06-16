@@ -80,20 +80,20 @@ At the end, background is removed from the image revealing only closest points.
 \subsection*{People detection}
 After the preprocessing phase people shapes can be easily spotted in the image, so a proper algorithm is trained to make this procedure automatic.
 
-Various clustering algorithms were evaluated to split this cloud of points into corresponding people, such as \emph{hierarchical clustering}, but at the end I chose traditional K-means clustering.
+Various clustering algorithms were evaluated to split this cloud of points into corresponding people, such as \emph{hierarchical clustering}, but at the end I chose traditional \emph{K-means} clustering.
 This decision was taken because of its speed and because it suits the problem very well given its clustering converges towards ellipsoids, very similar to people shapes seen from above.
 
 This approach leads to good results, but unfortunately it requires \emph{a prori} the number of clusters, i.e. the number of people in the scene.
 
-To assess the best value, K-means algorithm was run multiple times and its objective function, \emph{inertia}, was recorded for different values of $K$.
+To assess the best value, K-means algorithm was run multiple times and its objective function, \emph{compactness}, was recorded for different values of $K$.
 
 However this metric alone was not suitable to find the optimum, as it is monotonically decreasing in the number of clusters.
-A regularization factor was then added in order to prefer simpler configurations where \emph{inertia} decrement in $K$ was getting negligible.
+A regularization factor was then added in order to prefer simpler configurations where \emph{compactness} decrement in $K$ was getting negligible.
 
 \begin{equation*}
-  K^* = \argmin_{K = 1,\, \ldots,\, 6} ~  \log(I_K) - \eta K
+  K^* = \argmin_{K = 1,\, \ldots,\, 6} ~  \log(C_K) - \eta K
 \end{equation*}
-where $I_K$ is the clustering \emph{inertia}, defined as the sum of square distances of each point to its cluster centroid.
+where $C_K$ is the clustering \emph{compactness}, defined as the sum of square distances of each point to its cluster centroid.
 
 This custom function has similar goals such as \emph{silhouette score}, but it can also evaluate clustering for $K=1$, very relevant in this application.
 
