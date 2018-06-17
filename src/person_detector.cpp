@@ -28,8 +28,8 @@ void PersonDetector::detect_people(int image_id, cv::Mat& output, unsigned int& 
   // remove border noise: detect high derivative points of different
   // sign and close to each other with second order derivative
   cv::Mat first_derivative, second_derivative;
-  cv::Laplacian(depth_image, first_derivative, CV_32F, 3);
-  cv::Laplacian(first_derivative, second_derivative, CV_32F, 3);
+  cv::Sobel(depth_image, first_derivative, CV_32F, 1, 0);
+  cv::Laplacian(depth_image, second_derivative, CV_32F, 3);
 
   cv::absdiff(first_derivative, cv::Scalar::all(0), first_derivative);
   cv::absdiff(second_derivative, cv::Scalar::all(0), second_derivative);
