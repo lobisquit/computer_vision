@@ -39,7 +39,7 @@ void PersonDetector::detect_people(int image_id, cv::Mat& output, unsigned int& 
 
   cv::Mat mask = (first_derivative > 0) & (second_derivative > 0);
 
-  cv::dilate(mask, mask, cv::Mat());
+  cv::dilate(mask, mask, cv::Mat(), cv::Point(-1,-1), 2);
   cv::threshold(mask, mask, 1, 255, cv::THRESH_BINARY_INV);
 
   // duplicate depth_image, but with its mean color
